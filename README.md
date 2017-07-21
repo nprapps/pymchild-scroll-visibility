@@ -17,27 +17,41 @@ pymchild-scroll-visibility
 What is this?
 -------------
 
-This is a work in progress.
+After the release of [Pym.js version 1.3.0](http://blog.apps.npr.org/pym.js/#optional-scroll-tracking), Pym has added native optional support for scroll tracking, allowing the child pages to have all the information needed to determine if one of the child's element is currently on the viewport or not.
 
-After the release of [Pym.js version 1.3.0](https://github.com/nprapps/pym.js/releases/tag/v1.3.0) pym has added native optional support for scroll tracking, allowing the child pages to have all the information needed to determine if one of the child's element is currently on the viewport or not.
-
-`pymchild-scroll-visibility` is a small library built for being included on the pym embedded child pages that take advantage of this new capability to make the appropriate calculations to invoke a callback function if the supplied element is currently visible. Optionally you can also pass it another callback function to be invoked if the element is visible for a configurable period of time (signaling it is read).
+`pymchild-scroll-visibility` is a small library built for being included on the pym embedded child pages that take advantage of this new capability to make the appropriate calculations to invoke a callback function if the supplied element is currently visible.
 
 In order for this to work you'll need to set you pym parent to opt into scroll tracking, read more about how to do that [here](http://blog.apps.npr.org/pym.js/#optional-scroll-tracking).
 
-Once that is setup you need to create a `Tracker` for each element that you want to track and provide a callback function to be run when the element is visible:
+Once that is set up, you need to create a `Tracker` for each element that you want to track and provide a callback function to be run when the element is visible:
 
 ```
 var tracker = new PymChildScrollVisibility.Tracker('example', function(id) {
     console.log(id, 'visible')});
 ```
 
-And also you'll need to listen in the child to updates from the parent on scroll position and if received perform a check to see if the visibility has changed
+And also you'll need to listen in the child to updates from the parent on scroll position and perform a check to see if the visibility has changed once received.
 
 ```
 pymChild.onMessage('viewport-iframe-position', function(parentInfo) {
     tracker.checkIfVisible(parentInfo);
 ```
+
+Optionally you can also pass it another callback function to be invoked if the element is visible for a configurable period of time (signaling it is read). Like this:
+
+```
+var tracker = new PymChildScrollVisibility.Tracker('example', onVisible, onRead, {read_time: 1000});
+
+var onVisible = function(id) {
+    console.log(id, 'visible');
+};
+
+var onRead = function(id) {
+    console.log(id, 'read');
+};
+```
+
+_Note: If you do pass a read callback, you'll need to make sure that the throttle for the scroll defined on the parent is lower than the `read_time` you are passing when instantiating the tracker for each element. If you don't, you'll most probably get spurious read callback invocations since the scroll position if not updated frequently enough._
 
 Assumptions
 -----------
